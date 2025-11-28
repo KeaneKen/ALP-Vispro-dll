@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('chat', function (Blueprint $table) {
             $table->id('idChat');
-            $table->unsignedBigInteger('idMitra');
+            $table->string('idMitra');
             $table->unsignedBigInteger('idUser');
             $table->text('message');
             $table->enum('sender_type', ['mitra', 'user']); // Siapa yang kirim pesan
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('idMitra')->references('idMitra')->on('mitra')->onDelete('cascade');
-            $table->foreign('idUser')->references('idUser')->on('users')->onDelete('cascade');
+            $table->foreign('idUser')->references('id')->on('users')->onDelete('cascade');
         
             // Percepat pencarian chat antara mitra dan user
             $table->index(['idMitra', 'idUser']); 
