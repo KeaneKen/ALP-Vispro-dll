@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chat', function (Blueprint $table) {
-            $table->id('idChat')->primary();
-            $table->string('idMitra');
-            $table->string('idUser');
+            $table->id('idChat');
+            $table->unsignedBigInteger('idMitra');
+            $table->unsignedBigInteger('idUser');
             $table->text('message');
-            $table->enum('sender', ['mitra', 'user']); // Siapa yang kirim pesan
+            $table->enum('sender_type', ['mitra', 'user']); // Siapa yang kirim pesan
             $table->enum('status', ['sent', 'delivered', 'read'])->default('sent'); // Status
             $table->timestamp('sent_at')->useCurrent(); // Waktu dikirim
             $table->timestamp('read_at')->nullable(); // Waktu dibaca
