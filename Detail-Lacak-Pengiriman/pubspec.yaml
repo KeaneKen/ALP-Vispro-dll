@@ -52,13 +52,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-  - assets/gacoan.png
-  - assets/kfc.png
-  - assets/Solaria.png
-  - assets/Burger King.png
-  - assets/Wendys.png
-  - assets/PT Suka Makan.png
-  - assets/PT Makan Banyak.png  
+  - assets/padi.png  
   
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
