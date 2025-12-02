@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'navbar.dart';
 import 'Dashboard.dart';
 import 'cart.dart';
+import 'profile.dart';
 
 // Global cart counter
 final ValueNotifier<int> cartItemCount = ValueNotifier<int>(3);
@@ -41,7 +42,7 @@ class _MainScreenState extends State<MainScreen> {
     const Dashboard(),
     const Cart(),
     const OrdersScreen(),
-    const ProfileScreen(),
+    const Profile(),
   ];
 
   @override
