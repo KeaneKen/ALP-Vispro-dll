@@ -1,10 +1,130 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
 
-class ChatRoomScreen extends StatelessWidget {
+class Message {
+  final String text;
+  final String time;
+  final bool isMe;
+
+  Message({
+    required this.text,
+    required this.time,
+    required this.isMe,
+  });
+}
+
+class ChatRoomScreen extends StatefulWidget {
   final Chat chat;
 
   const ChatRoomScreen({Key? key, required this.chat}) : super(key: key);
+
+  @override
+  State<ChatRoomScreen> createState() => _ChatRoomScreenState();
+}
+
+class _ChatRoomScreenState extends State<ChatRoomScreen> {
+  late TextEditingController _messageController;
+  late List<Message> messages;
+  late ScrollController _scrollController;
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _messageController = TextEditingController();
+    _scrollController = ScrollController();
+    _focusNode = FocusNode();
+    
+    // Inisialisasi pesan awal
+    messages = [
+      Message(
+        text: 'Suporte ADMIN',
+        time: '05:43',
+        isMe: false,
+      ),
+      Message(
+        text: 'Online',
+        time: '05:43',
+        isMe: false,
+      ),
+      Message(
+        text: 'How can I help you?',
+        time: '05:43',
+        isMe: false,
+      ),
+      Message(
+        text: 'Hello, I need help with my order',
+        time: '05:44',
+        isMe: true,
+      ),
+      Message(
+        text: 'My order number is #12345',
+        time: '05:44',
+        isMe: true,
+      ),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _sendMessage() {
+    if (_messageController.text.trim().isEmpty) return;
+
+    DateTime now = DateTime.now();
+    String time = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+    setState(() {
+      messages.add(
+        Message(
+          text: _messageController.text,
+          time: time,
+          isMe: true,
+        ),
+      );
+      _messageController.clear();
+    });
+
+
+    Future.delayed(Duration(milliseconds: 100), () {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
+
+
+    Future.delayed(Duration(seconds: 1), () {
+      if (mounted) {
+        DateTime replyTime = DateTime.now();
+        String replyTimeStr = '${replyTime.hour.toString().padLeft(2, '0')}:${replyTime.minute.toString().padLeft(2, '0')}';
+        
+        setState(() {
+          messages.add(
+            Message(
+              text: 'Terima kasih telah menghubungi kami. Tim kami akan membantu Anda segera.',
+              time: replyTimeStr,
+              isMe: false,
+            ),
+          );
+        });
+
+        Future.delayed(Duration(milliseconds: 100), () {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,19 +142,19 @@ class ChatRoomScreen extends StatelessWidget {
             Container(
               width: 40,
               height: 40,
-              child: chat.imageUrl != null && chat.imageUrl!.isNotEmpty 
+              child: widget.chat.imageUrl != null && widget.chat.imageUrl!.isNotEmpty 
                   ? CircleAvatar(
-                      backgroundImage: AssetImage(chat.imageUrl!), 
+                      backgroundImage: AssetImage(widget.chat.imageUrl!), 
                       radius: 20,
                     )
-                  : Container(
+                    : Container(
                       decoration: BoxDecoration(
-                        color: _getAvatarColor(chat.name),
+                        color: _getAvatarColor(widget.chat.name),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Center(
                         child: Text(
-                          _getInitials(chat.name),
+                          _getInitials(widget.chat.name),
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -45,79 +165,67 @@ class ChatRoomScreen extends StatelessWidget {
                     ),
             ),
             SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  chat.name,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.chat.name,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-                Text(
-                  'Online',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 12,
+                  Text(
+                    'Online',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.call, color: Colors.black),
+              onPressed: () {},
+              padding: EdgeInsets.zero,
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
+        actions: [],
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Text(
-              'Today',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12,
-              ),
-            ),
-          ),
           Expanded(
-            child: ListView(
+            child: ListView.builder(
+              controller: _scrollController,
               padding: EdgeInsets.all(16),
-              children: [
-                _buildMessageBubble(
-                  message: 'Suporte ADMIN',
-                  time: '05:43',
-                  isMe: false,
-                ),
-                _buildMessageBubble(
-                  message: 'Online',
-                  time: '05:43',
-                  isMe: false,
-                ),
-                SizedBox(height: 8),
-                _buildMessageBubble(
-                  message: 'How can I help you?',
-                  time: '05:43',
-                  isMe: false,
-                ),
-                SizedBox(height: 16),
-                _buildMessageBubble(
-                  message: 'Hello, I need help with my order',
-                  time: '05:44',
-                  isMe: true,
-                ),
-                _buildMessageBubble(
-                  message: 'My order number is #12345',
-                  time: '05:44',
-                  isMe: true,
-                ),
-              ],
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    if (index == 0)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Text(
+                          'Today',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    _buildMessageBubble(
+                      message: messages[index].text,
+                      time: messages[index].time,
+                      isMe: messages[index].isMe,
+                    ),
+                    SizedBox(height: 8),
+                  ],
+                );
+              },
             ),
           ),
           Container(
@@ -126,26 +234,51 @@ class ChatRoomScreen extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Type here',
-                        border: InputBorder.none,
+                  child: GestureDetector(
+                    onTap: () {
+                      FocusScope.of(context).requestFocus(_focusNode);
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: _focusNode.hasFocus ? Color(0xFFABC270) : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _messageController,
+                        focusNode: _focusNode,
+                        decoration: InputDecoration(
+                          hintText: 'Type here',
+                          border: InputBorder.none,
+                        ),
+                        maxLines: null,
+                        minLines: 1,
+                        keyboardType: TextInputType.text,
                       ),
                     ),
                   ),
                 ),
                 SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor: Color(0xFFE4B681),
-                  child: IconButton(
-                    icon: Icon(Icons.send, color: Colors.white),
-                    onPressed: () {},
+                GestureDetector(
+                  onTap: _sendMessage,
+                  child: Container(
+                    width: 35,
+                    height: 35,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFFEAB1B),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 30,
+                        child: Icon(Icons.send, color: Colors.black),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -167,7 +300,7 @@ class ChatRoomScreen extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: 4),
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isMe ? Color(0xFFE4B681) : Color(0xFFEECAAA),
+          color: isMe ? Color(0xFFABC270) : Color(0xFFFEAB1B),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),

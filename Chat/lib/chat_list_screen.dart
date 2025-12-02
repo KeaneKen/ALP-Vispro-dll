@@ -2,7 +2,15 @@ import 'package:flutter/material.dart';
 import 'chat_room_screen.dart';
 import 'models.dart';
 
-class ChatListScreen extends StatelessWidget {
+class ChatListScreen extends StatefulWidget {
+  @override
+  State<ChatListScreen> createState() => _ChatListScreenState();
+}
+
+class _ChatListScreenState extends State<ChatListScreen> {
+  late TextEditingController _searchController;
+  late List<Chat> _filteredChats;
+
   final List<Chat> chats = [
     Chat(
       name: 'Gacoan',
@@ -16,7 +24,7 @@ class ChatListScreen extends StatelessWidget {
       lastMessage: 'You: The store only has (gasp!) 2% m...',
       time: '2:14 PM',
       isUnread: false,
-      imageUrl: 'assets/Wendys.png' // PERHATIKAN: 'W' besar
+      imageUrl: 'assets/Wendys.png' 
     ),
     Chat(
       name: 'KFC',
@@ -30,46 +38,78 @@ class ChatListScreen extends StatelessWidget {
       lastMessage: 'You: The game went into OT, it\'s gonn...',
       time: 'Friday',
       isUnread: false,
-      imageUrl: 'assets/Solaria.png' // PERHATIKAN: 'S' besar
+      imageUrl: 'assets/Solaria.png'
     ),
     Chat(
       name: 'Burger King',
       lastMessage: 'The class has open enrollment until th...',
       time: '12/28/20',
       isUnread: false,
-      imageUrl: 'assets/Burger King.png' // PERHATIKAN: spasi dan kapital
+      imageUrl: 'assets/Burger King.png'
     ),
     Chat(
       name: 'PT Suka Makan',
       lastMessage: '@waldo Is Cleveland nice in October?',
       time: '08/09/20',
       isUnread: false,
-      imageUrl: 'assets/PT Suka Makan.png' // PERHATIKAN: spasi dan kapital
+      imageUrl: 'assets/PT Suka Makan.png'
     ),
     Chat(
       name: 'PT Makan Banyak',
       lastMessage: 'You: Can you mail my rent check?',
       time: '22/08/20',
       isUnread: false,
-      imageUrl: 'assets/PT Makan Banyak.png' // PERHATIKAN: spasi dan kapital
+      imageUrl: 'assets/PT Makan Banyak.png'
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    _filteredChats = chats;
+    _searchController.addListener(_filterChats);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterChats() {
+    String query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredChats = chats;
+      } else {
+        _filteredChats = chats
+            .where((chat) => chat.name.toLowerCase().contains(query))
+            .toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFEFAE0), 
       appBar: AppBar(
-        title: Text(
-          'Pesan',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
+        title: Container(
+          padding: EdgeInsets.only(left: 16, top: 20),
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Chat',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+            ),
           ),
         ),
         backgroundColor: Color(0xFFFEFAE0),
         elevation: 0,
         foregroundColor: Colors.black,
+        titleSpacing: 0,
       ),
       body: Column(
         children: [
@@ -90,6 +130,7 @@ class ChatListScreen extends StatelessWidget {
                 ],
               ),
               child: TextField(
+                controller: _searchController,
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search, color: Colors.grey),
                   hintText: 'Search',
@@ -110,16 +151,16 @@ class ChatListScreen extends StatelessWidget {
                 ),
               ),
               child: ListView.builder(
-                itemCount: chats.length,
+                itemCount: _filteredChats.length,
                 itemBuilder: (context, index) {
                   return ChatListItem(
-                    chat: chats[index],
+                    chat: _filteredChats[index],
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ChatRoomScreen(
-                            chat: chats[index],
+                            chat: _filteredChats[index],
                           ),
                         ),
                       );
