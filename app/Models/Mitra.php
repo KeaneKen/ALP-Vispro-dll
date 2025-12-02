@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
 
 class Mitra extends Model
 {
+    use HasApiTokens;
+
     protected $table = 'mitra';
     protected $primaryKey = 'idMitra';
     public $incrementing = false;
